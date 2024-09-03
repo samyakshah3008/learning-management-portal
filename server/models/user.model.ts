@@ -1,7 +1,12 @@
 import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { Document, Model, Schema, model } from "mongoose";
 import { emailRegex } from "../constants/regex";
+
+dotenv.config({
+  path: ".env",
+});
 
 export interface IUser extends Document {
   name: string;
