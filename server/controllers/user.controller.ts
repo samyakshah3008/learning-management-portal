@@ -1,11 +1,18 @@
+import dotenv from "dotenv";
 import ejs from "ejs";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import path from "path";
 import sendMail from "../lib/nodemailer";
+import { redis } from "../lib/redis";
 import { User } from "../models/user.model";
 import { asyncHandler } from "../utils/async-handler";
 import { ErrorHandler } from "../utils/error-handler";
+import { saveTokensAndSignIn } from "../utils/jwt";
+
+dotenv.config({
+  path: ".env",
+});
 
 interface IActivationToken {
   token: string;
@@ -129,7 +136,7 @@ interface ILoginRequest {
   password: string;
 }
 
-const loginUser = asyncHandler(
+const signInUser = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email, password } = req.body as ILoginRequest;
@@ -154,8 +161,29 @@ const loginUser = asyncHandler(
           new ErrorHandler("Incorrect password, please try again. ", 400)
         );
       }
+
+      saveTokensAndSignIn(existingUser, 200, res);
     } catch (error: any) {}
   }
 );
 
-export { loginUser, registratingUser, verifyAndCreateUser };
+const signOutUser = asyncHandler(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    try {
+      res.cookie("accessToken", "", { maxAge: 1 });
+      res.cookie("refreshToken", "", { maxAge: 1 });
+      const userId = req.user?._id || "";
+      console.log(userId, "userid");
+      redis.del(userId);
+
+      res.status(200).json({
+        success: true,
+        message: "User signed out successfully. ",
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export { registratingUser, signInUser, signOutUser, verifyAndCreateUser };
