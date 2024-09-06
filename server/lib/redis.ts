@@ -1,4 +1,10 @@
+import dotenv from "dotenv";
 import { Redis } from "ioredis";
+
+dotenv.config({
+  path: ".env",
+});
+
 const redisClient = () => {
   if (process.env.REDIS_URI) {
     console.log(`Redis connected `);
