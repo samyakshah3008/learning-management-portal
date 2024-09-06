@@ -19,6 +19,7 @@ export interface IUser extends Document {
   role: string;
   isVerified: boolean;
   courses: Array<{ courseId: string }>;
+  isThirdPartyAccount: boolean;
   comparePassword: (password: string) => Promise<boolean>;
   signAccessToken: () => string;
   signRefreshToken: () => string;
@@ -43,7 +44,12 @@ const userSchema: Schema<IUser> = new Schema(
     },
     password: {
       type: String,
-      required: [true, "Please enter your password"],
+      required: [
+        function () {
+          return !this.isThirdPartyAccount;
+        },
+        "Please enter password",
+      ],
       minlength: [6, "Password must be at least 6 characters. "],
       select: false,
     },
@@ -64,6 +70,10 @@ const userSchema: Schema<IUser> = new Schema(
         courseId: String,
       },
     ],
+    isThirdPartyAccount: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
@@ -75,11 +85,15 @@ userSchema.pre<IUser & Document>("save", async function (next) {
 });
 
 userSchema.methods.signAccessToken = function () {
-  return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN!);
+  return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN!, {
+    expiresIn: "5m",
+  });
 };
 
 userSchema.methods.signRefreshToken = function () {
-  return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN!);
+  return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN!, {
+    expiresIn: "3d",
+  });
 };
 
 userSchema.methods.comparePassword = async function (
