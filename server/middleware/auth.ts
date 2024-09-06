@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { asyncHandler } from "../utils/async-handler";
-import { ErrorHandler } from "../utils/error-handler";
 
 import dotenv from "dotenv";
 import { redis } from "../lib/redis";
@@ -15,7 +14,9 @@ const isAuthenticated = asyncHandler(
     const accessToken = req.cookies?.accessToken as string;
 
     if (!accessToken) {
-      return next(new ErrorHandler("Please login to continue.", 400));
+      return res
+        .status(400)
+        .json({ message: "Please login to continue", success: false });
     }
 
     const decoded = jwt.verify(
@@ -24,13 +25,17 @@ const isAuthenticated = asyncHandler(
     ) as JwtPayload;
 
     if (!decoded) {
-      return next(new ErrorHandler("Access token is invalid", 400));
+      return res
+        .status(400)
+        .json({ message: "Access token is invalid", success: false });
     }
 
     const user = await redis.get(decoded.id);
 
     if (!user) {
-      return next(new ErrorHandler("User not found!", 400));
+      return res
+        .status(404)
+        .json({ message: "User not found!", success: false });
     }
 
     req.user = JSON.parse(user);
@@ -42,13 +47,12 @@ const isAuthenticated = asyncHandler(
 export const authorizeRoles = (...roles: string[]) => {
   return (req: Request | any, res: Response, next: NextFunction) => {
     if (!roles.includes(req.user?.role || "")) {
-      return next(
-        new ErrorHandler(
-          `Role: ${req.user?.role} is not allowed to access this resource`,
-          403
-        )
-      );
+      return res.status(403).json({
+        message: `Role: ${req.user?.role} is not allowed to access this resource`,
+        success: false,
+      });
     }
+    next();
   };
 };
 
