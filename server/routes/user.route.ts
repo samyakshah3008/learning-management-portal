@@ -1,17 +1,17 @@
 import { Router } from "express";
 import {
-  registratingUser,
-  signInUser,
-  signOutUser,
-  verifyAndCreateUser,
+  getUserInfo,
+  updateAvatar,
+  updatePassword,
+  updateUserInfo,
 } from "../controllers/user.controller";
 import { isAuthenticated } from "../middleware/auth";
 
 const router = Router();
 
-router.post("/signup", registratingUser);
-router.post("/signup/verify-code", verifyAndCreateUser);
-router.post("/signin", signInUser);
-router.get("/signout", isAuthenticated, signOutUser);
+router.get("/get-user-details", isAuthenticated, getUserInfo);
+router.put("/update-info", isAuthenticated, updateUserInfo);
+router.put("/update-password", isAuthenticated, updatePassword);
+router.put("/update-avatar", isAuthenticated, updateAvatar);
 
 export default router;
