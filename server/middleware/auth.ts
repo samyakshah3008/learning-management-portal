@@ -13,7 +13,6 @@ dotenv.config({
 const isAuthenticated = asyncHandler(
   async (req: Request | any, res: Response, next: NextFunction) => {
     const accessToken = req.cookies?.accessToken as string;
-    console.log(req.cookies, "cookies");
 
     if (!accessToken) {
       return next(new ErrorHandler("Please login to continue.", 400));
