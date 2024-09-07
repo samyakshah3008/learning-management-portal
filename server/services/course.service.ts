@@ -6,6 +6,7 @@ import path from "path";
 import sendMail from "../lib/nodemailer";
 import { redis } from "../lib/redis";
 import { Course } from "../models/course.model";
+import { Notification } from "../models/notification.model";
 import { ErrorHandler } from "../utils/error-handler";
 
 const uploadCourseService = async (data: any) => {
@@ -159,6 +160,12 @@ const addQuestionService = async (
 
   courseContent?.questions?.push(newQuestion);
 
+  await Notification.create({
+    user: req?.user?._id,
+    title: "New Question Received",
+    message: `You have new question in ${courseContent?.title}`,
+  });
+
   await course?.save();
 
   return { success: true, course };
@@ -221,7 +228,11 @@ const addAnswerService = async (
   await course?.save();
 
   if (req?.user?._id === question?.user?._id) {
-    // create a notification
+    await Notification.create({
+      user: req?.user?._id,
+      title: "New Question Reply Received",
+      message: `You have new question reply in ${courseContent?.title}`,
+    });
   } else {
     const data = {
       name: question.user.name,
@@ -284,12 +295,11 @@ const addReviewService = async (
 
   await course?.save();
 
-  const notification = {
+  await Notification.create({
+    user: req?.user?._id,
     title: "New Review Received",
     message: `${req?.user?.name} has given a review in ${course?.name}`,
-  };
-
-  // create notification
+  });
 
   return { success: true, course };
 };
@@ -330,13 +340,36 @@ const addReplyToReviewService = async (
   return { success: true, course };
 };
 
+const fetchAllCoursesService = async () => {
+  const courses = await Course.find().sort({ createdAt: -1 });
+  return { success: true, courses };
+};
+
+const deleteCourseService = async (id: string) => {
+  if (!id) {
+    throw new ErrorHandler("User Id is required", 400);
+  }
+
+  const course = await Course.findById(id);
+
+  if (!course) {
+    throw new ErrorHandler("Course not found", 404);
+  }
+
+  await course.deleteOne({ id });
+  await redis.del(id);
+  return { success: true, message: "Course deleted successfully. " };
+};
+
 export {
   addAnswerService,
   addQuestionService,
   addReplyToReviewService,
   addReviewService,
   createCourseService,
+  deleteCourseService,
   editCourseService,
+  fetchAllCoursesService,
   getAllCoursesService,
   getCourseByBuyerService,
   getParticularCourseService,

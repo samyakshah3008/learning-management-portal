@@ -125,9 +125,38 @@ const updateAvatarService = async (
   return { success: true, user };
 };
 
+const fetchAllUsersService = async () => {
+  const users = await User.find().sort({ createdAt: -1 });
+  return { success: true, users };
+};
+
+const updateUserRoleService = async (id: string, role: string) => {
+  const user = await User.findByIdAndUpdate(id, { role }, { new: true });
+  return { success: true, user };
+};
+
+const deleteUserService = async (id: string) => {
+  if (!id) {
+    throw new ErrorHandler("User Id is required", 400);
+  }
+
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw new ErrorHandler("User not found", 404);
+  }
+
+  await user.deleteOne({ id });
+  await redis.del(id);
+  return { success: true, message: "User deleted successfully. " };
+};
+
 export {
+  deleteUserService,
+  fetchAllUsersService,
   getUserByIdService,
   updateAvatarService,
   updatePasswordService,
   updateUserInfoService,
+  updateUserRoleService,
 };

@@ -4,10 +4,13 @@ import { NextFunction, Request, Response } from "express";
 import { User } from "../models/user.model";
 
 import {
+  deleteUserService,
+  fetchAllUsersService,
   getUserByIdService,
   updateAvatarService,
   updatePasswordService,
   updateUserInfoService,
+  updateUserRoleService,
 } from "../services/user.service";
 
 import { asyncHandler } from "../utils/async-handler";
@@ -95,4 +98,60 @@ const updateAvatar = asyncHandler(
   }
 );
 
-export { getUserInfo, updateAvatar, updatePassword, updateUserInfo };
+const fetchAllUsers = asyncHandler(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    try {
+      const response = await fetchAllUsersService();
+
+      res.status(200).json(response);
+    } catch (error: any) {
+      if (error instanceof ErrorHandler) {
+        return res.status(error.statusCode).json(error.message);
+      }
+      return res.status(400).json(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+const updateUserRole = asyncHandler(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    try {
+      const { id, role } = req.body;
+      const response = await updateUserRoleService(id, role);
+
+      res.status(200).json(response);
+    } catch (error: any) {
+      if (error instanceof ErrorHandler) {
+        return res.status(error.statusCode).json(error.message);
+      }
+      return res.status(400).json(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+const deleteUser = asyncHandler(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const response = await deleteUserService(id);
+
+      res.status(200).json(response);
+    } catch (error: any) {
+      console.log(error, "error");
+      if (error instanceof ErrorHandler) {
+        return res.status(error.statusCode).json(error.message);
+      }
+      return res.status(400).json(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export {
+  deleteUser,
+  fetchAllUsers,
+  getUserInfo,
+  updateAvatar,
+  updatePassword,
+  updateUserInfo,
+  updateUserRole,
+};

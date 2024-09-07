@@ -4,7 +4,9 @@ import {
   addQuestion,
   addReplyToReview,
   addReview,
+  deleteCourse,
   editCourse,
+  fetchAllCourses,
   getAllCourses,
   getCourseByBuyer,
   getParticularCourse,
@@ -17,6 +19,12 @@ const router = Router();
 router.get("/get-course/:id", getParticularCourse);
 router.get("/get-courses", getAllCourses);
 router.get("/get-course-content/:id", isAuthenticated, getCourseByBuyer);
+router.get(
+  "/admin/get-courses",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  fetchAllCourses
+);
 
 router.post(
   "/upload-course",
@@ -39,6 +47,13 @@ router.put(
   isAuthenticated,
   authorizeRoles("admin"),
   addReplyToReview
+);
+
+router.delete(
+  "/delete-course/:id",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  deleteCourse
 );
 
 export default router;
