@@ -4,7 +4,9 @@ import {
   addQuestionService,
   addReplyToReviewService,
   addReviewService,
+  deleteCourseService,
   editCourseService,
+  fetchAllCoursesService,
   getAllCoursesService,
   getCourseByBuyerService,
   getParticularCourseService,
@@ -183,12 +185,46 @@ const addReplyToReview = asyncHandler(
   }
 );
 
+const fetchAllCourses = asyncHandler(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    try {
+      const response = await fetchAllCoursesService();
+
+      res.status(200).json(response);
+    } catch (error: any) {
+      if (error instanceof ErrorHandler) {
+        return res.status(error.statusCode).json(error.message);
+      }
+      return res.status(400).json(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+const deleteCourse = asyncHandler(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const response = await deleteCourseService(id);
+
+      res.status(200).json(response);
+    } catch (error: any) {
+      console.log(error, "error");
+      if (error instanceof ErrorHandler) {
+        return res.status(error.statusCode).json(error.message);
+      }
+      return res.status(400).json(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
 export {
   addAnswer,
   addQuestion,
   addReplyToReview,
   addReview,
+  deleteCourse,
   editCourse,
+  fetchAllCourses,
   getAllCourses,
   getCourseByBuyer,
   getParticularCourse,
