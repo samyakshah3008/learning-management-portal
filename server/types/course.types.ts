@@ -1,11 +1,13 @@
+import { IUser } from "./user.types";
+
 interface IComment extends Document {
-  user: object;
-  comment: string;
-  commentReplies: IComment[];
+  user: IUser;
+  question: string;
+  questionReplies: IComment[];
 }
 
 interface IReview extends Document {
-  user: object;
+  user: IUser;
   rating: number;
   comment: string;
   commentReplies: IComment[];
@@ -46,4 +48,38 @@ interface ICourse extends Document {
   purchased?: number;
 }
 
-export { IComment, ICourse, ICourseData, ILink, IReview };
+interface IAddQuestionData {
+  question: string;
+  courseId: string;
+  contentId: string;
+}
+interface IAddAnswerData {
+  answer: string;
+  courseId: string;
+  contentId: string;
+  questionId: string;
+}
+
+interface IAddReviewData {
+  review: string;
+  rating: number;
+  userId: string;
+}
+
+interface IAddReplyToReviewData {
+  comment: string;
+  courseId: string;
+  reviewId: string;
+}
+
+export {
+  IAddAnswerData,
+  IAddQuestionData,
+  IAddReplyToReviewData,
+  IAddReviewData,
+  IComment,
+  ICourse,
+  ICourseData,
+  ILink,
+  IReview,
+};
