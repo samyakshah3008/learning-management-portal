@@ -72,7 +72,7 @@ const getParticularCourseService = async (courseId: string) => {
     const course = await Course.findById(courseId).select(
       "-courseData.videoUrl -courseData.suggestion --courseData.questions --courseData.links"
     );
-    await redis.set(courseId, JSON.stringify(course));
+    await redis.set(courseId, JSON.stringify(course), "EX", 604800);
 
     return { success: true, course };
   }
