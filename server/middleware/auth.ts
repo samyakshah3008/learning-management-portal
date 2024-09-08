@@ -34,8 +34,11 @@ const isAuthenticated = asyncHandler(
 
     if (!user) {
       return res
-        .status(404)
-        .json({ message: "User not found!", success: false });
+        .status(400)
+        .json({
+          message: "PLease login to access this resource.",
+          success: false,
+        });
     }
 
     req.user = JSON.parse(user);

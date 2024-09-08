@@ -151,7 +151,7 @@ const generateNewAccessTokenService = async (
   const session = await redis.get(decoded.id as string);
 
   if (!session) {
-    throw new ErrorHandler("Could not refresh token", 400);
+    throw new ErrorHandler("Please login to access this resource.", 400);
   }
 
   const user = JSON.parse(session);
@@ -169,6 +169,8 @@ const generateNewAccessTokenService = async (
 
   res.cookie("accessToken", newAccessToken, accessTokenOptions);
   res.cookie("refreshToken", newRefreshToken, refreshTokenOptions);
+
+  await redis.set(user?._id, JSON.stringify(user), "EX", 604800); // 7 days
 
   return { status: "success", newAccessToken };
 };
